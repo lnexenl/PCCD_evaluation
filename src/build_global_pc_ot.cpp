@@ -13,10 +13,10 @@ int main(int argc, char** argv) {
     omp_set_num_threads(omp_get_thread_num());
 
     std::string workDIR = argv[1];
-    std::string originPC = argv[2];
-    std::string trial = argv[3];
-    std::string tp = argv[4];
-    int dist = atoi(argv[5]);
+    std::string originPC = "/home/lnex/dataset/origin/8x.pcd";
+    std::string trial = argv[2];
+    std::string tp = argv[3];
+    int dist = atoi(argv[4]);
 
     std::map<uint64_t, pose> poseMap;
     std::map<uint64_t, cv::Mat> dispMap;
@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
     PointCloudXYZ::Ptr priorNewPC(new PointCloudXYZ()), priorRmPC(new PointCloudXYZ());
 
     ror.setMinNeighborsInRadius(16);
-    ror.setRadiusSearch(2.0);
-    vg.setLeafSize(0.4, 0.4, 0.4);
+    ror.setRadiusSearch(4.0);
+    vg.setLeafSize(0.8, 0.8, 0.8);
 
     pcl::io::loadPCDFile(originPC, *priorOriginPC);
     pcl::io::loadPCDFile(workDIR + "/../new.pcd", *priorNewPC);
@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
 
     buildGLobalPointcloud(poseMap, dispMap, globalPC);
     // PointCloudXYZ::Ptr croppedPriorPC = filter_and_crop_target_cloud(globalPC, priorOriginPC);
+    std::cout << "global pc size: " << globalPC->size() << std::endl;
     PointCloudXYZ::Ptr outputPC(new PointCloudXYZ);
     printf("Performing registration...\n");
     Eigen::Matrix4f m;

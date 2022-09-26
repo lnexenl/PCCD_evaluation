@@ -3,12 +3,11 @@ project(PCCD_evaluation)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-g -Wall -O3 -fPIC -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2 -march=native -fpermissive")
+set(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -O3 -fPIC -march=native")
+find_package(catkin REQUIRED COMPONENTS fast_gicp)
 find_package(octomap REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Boost REQUIRED)
-find_package(fast_gicp REQUIRED)
-find_package(catkin REQUIRED COMPONENTS fast_gicp)
 find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -20,9 +19,9 @@ include_directories(${OCTOMAP_INCLUDE_DIR} ${PCL_INCLUDE_DIR} ${Boost_INCLUDE_DI
 include_directories(include)
 
 add_executable(build_global_pc_ot src/build_global_pc_ot.cpp)
-target_link_libraries(build_global_pc_ot ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(build_global_pc_ot ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 add_executable(build_confusion_mat src/build_confusion_matrix.cc)
-target_link_libraries(build_confusion_mat ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(build_confusion_mat ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} OpenMP::OpenMP_CXX)
 
 #

@@ -1,6 +1,6 @@
 #!/bin/bash
-declare -a workdirs=("/home/lnex/dataset/changed1/02" "/home/lnex/dataset/changed1/01"  "/home/lnex/dataset/changed2/01" "/home/lnex/dataset/changed2/02")
-declare -a algos=("prior")
+declare -a workdirs=("/home/lnex/work/new_dataset/S1_01/small" "/home/lnex/work/new_dataset/S1_01/big"  "/home/lnex/work/new_dataset/S1_02/small" "/home/lnex/work/new_dataset/S1_02/big" "/home/lnex/work/new_dataset/S2_01/small" "/home/lnex/work/new_dataset/S2_01/big"  "/home/lnex/work/new_dataset/S2_02/small" "/home/lnex/work/new_dataset/S2_02/big")
+declare -a algos=("prior" "vio")
 for i in ${!workdirs[@]}; do
     for j in {1..5}; do
         for k in ${!algos[@]}; do

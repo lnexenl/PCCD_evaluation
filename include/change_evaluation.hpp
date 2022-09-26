@@ -119,8 +119,8 @@ void buildGLobalPointcloud(std::map<uint64_t, pose>& poseMap, std::map<uint64_t,
     vg.filter(*globalpc);
 }
 
-template <typename Registration>
-void align(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& target, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& source, Eigen::Matrix4f &transform) {
+// template <typename Registration>
+void align(pcl::Registration<PointXYZ, PointXYZ>& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& target, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& source, Eigen::Matrix4f &transform) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr aligned(new pcl::PointCloud<pcl::PointXYZ>);
 
     double fitness_score = 0.0;
@@ -129,8 +129,6 @@ void align(Registration& reg, const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& ta
     auto t1 = std::chrono::high_resolution_clock::now();
     // fast_gicp reuses calculated covariances if an input cloud is the same as the previous one
     // to prevent this for benchmarking, force clear source and target clouds
-    reg.clearTarget();
-    reg.clearSource();
     reg.setInputTarget(target);
     reg.setInputSource(source);
     reg.align(*aligned);
@@ -225,7 +223,7 @@ OcTree build_octomap_from_posedisp(const Eigen::Matrix4f& m, posemap& poseMap, d
                 }
             Eigen::Vector3f cam_p(poseMap[stamp].x, poseMap[stamp].y, poseMap[stamp].z);
             cam_p = m.block<3, 3>(0, 0) * cam_p + m.block<3, 1>(0, 3);
-            vg.setLeafSize(0.4, 0.4, 0.4);
+            vg.setLeafSize(0.8, 0.8, 0.8);
             vg.setInputCloud(cloud);
             vg.filter(*cloud);
             ror.setInputCloud(cloud);

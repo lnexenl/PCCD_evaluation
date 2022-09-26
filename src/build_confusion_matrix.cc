@@ -1,5 +1,7 @@
 #include "change_evaluation.hpp"
-#include <pcl/filters/crop_box.h>
+#include <pcl/filters/box_clipper3D.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/impl/point_types.hpp>
 int FX = 400, FY = 400;
 int CX = 400, CY = 225;
 double res;
@@ -14,23 +16,32 @@ int main(int argc, char **argv) {
     std::string tp = argv[3];
     int dist = atoi(argv[4]);
     res = atof(argv[5]);
-    PointCloudXYZ::Ptr priorOriginPC(new PointCloudXYZ()), priorChangedPC(new PointCloudXYZ()), globalPC(new PointCloudXYZ());
+    PointCloudXYZ::Ptr priorOriginPC(new PointCloudXYZ()), priorChangedPC(new PointCloudXYZ()), globalPC(new PointCloudXYZ()), tmpPC(new PointCloudXYZ());
     PointCloudXYZ::Ptr newPC(new PointCloudXYZ()), rmPC(new PointCloudXYZ());
     PointCloudXYZ::Ptr priorNewPC(new PointCloudXYZ()), priorRmPC(new PointCloudXYZ());
-    CropBox<PointXYZ> cb;
-    cb.setMax({ 125., 125., 50., 1. });
-    cb.setMin({ -125., -125., -10., 1. });
+    pcl::BoxClipper3D<PointXYZ> bc(Affine3f::Identity());
+    pcl::IndicesPtr ind(new pcl::Indices());
+    Vector3f sca(1. / 125., 1. / 125., 1. / 30.);
+    Vector3f tr(0., 0., 20.);
+    Affine3f t(Translation3f(-tr.cwiseProduct(sca)));
+
+    t.scale(sca);
+    bc.setTransformation(t);
+    
     pcl::io::loadPCDFile("/home/lnex/dataset/origin/4x.pcd", *priorOriginPC);
     pcl::io::loadPCDFile(workDIR + "/../new.pcd", *priorNewPC);
     pcl::io::loadPCDFile(workDIR + "/../removed.pcd", *priorRmPC);
     pcl::io::loadPCDFile(workDIR + "/" + trial + "/" + tp + "_" + std::to_string(dist) + "_global.pcd", *globalPC);
-    cb.setInputCloud(globalPC);
-    cb.filter(*globalPC);
+    bc.clipPointCloud3D(*globalPC, *ind);
+    pcl::ExtractIndices<pcl::PointXYZ> ei;
+    ei.setInputCloud(globalPC);
+    ei.setIndices(ind);
+    ei.filter(*tmpPC);
+    *globalPC = *tmpPC;
     ror.setMinNeighborsInRadius(16);
-    ror.setRadiusSearch(2.0);
-    vg.setLeafSize(0.4, 0.4, 0.4);
+    ror.setRadiusSearch(4.0);
+    vg.setLeafSize(0.8, 0.8, 0.8);
     octomap::OcTree obsArea(workDIR + "/" + trial + "/" + tp + "_" + std::to_string(dist) + "_global.bt");
-
     PointCloudXYZ::Ptr intersectPC = build_intersect_prior_pointcloud(obsArea, priorOriginPC, globalPC);
 
     build_diff_clouds(intersectPC, globalPC, newPC, rmPC);
@@ -39,4 +50,5 @@ int main(int argc, char **argv) {
     pcl::io::savePCDFile(workDIR + "/" + trial + "/" + tp + "_" + std::to_string(dist) + "_rm.pcd", *rmPC, true);
     vector<double> metrics = calculate_metrics(obsArea, globalPC, priorNewPC, priorRmPC, newPC, rmPC);
     std::cout << metrics[0] << "," << metrics[1] << "," << metrics[2] << "," << metrics[3] << "," << metrics[4] << "," << metrics[5] << std::endl;
+    return 0;
 }
